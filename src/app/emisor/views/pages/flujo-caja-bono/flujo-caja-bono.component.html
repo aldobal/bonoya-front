@@ -1,0 +1,154 @@
+<div class="page-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando información del bono...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-message">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Error al cargar</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="volverAMisBonos()">
+        <i class="fas fa-arrow-left"></i>
+        Volver a Mis Bonos
+      </button>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="bono && !loading" class="flujo-content">
+    <!-- Header -->
+    <div class="flujo-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">Flujo de Caja Proyectado</h1>
+          <div class="bono-name">{{ bono.nombre }}</div>
+        </div>
+        <div class="action-buttons">
+           <button class="btn-secondary" (click)="volverADetalle()">
+            <i class="fas fa-arrow-left"></i>
+            Volver al Detalle
+          </button>
+          <button class="btn-primary" (click)="volverAMisBonos()">
+            <i class="fas fa-list"></i>
+            Mis Bonos
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Resumida del Bono -->
+    <div class="bono-summary">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="label">Valor Nominal</div>
+          <div class="value">{{ formatCurrency(bono.valorNominal) }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Tasa Cupón</div>
+          <div class="value">{{ formatPercentage(bono.tasaCupon) }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Plazo</div>
+          <div class="value">{{ bono.plazoAnios }} años</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Frecuencia</div>
+          <div class="value">{{ bono.frecuenciaPagos }}x/año</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Método de Pago -->
+    <div *ngIf="bono.metodoAmortizacion === 'AMERICANO' || bono.metodoAmortizacion === 'ALEMAN'" class="metodo-pago-info">
+      <div class="info-card">
+        <div class="info-header">
+          <i class="fas fa-info-circle"></i>
+          <span>Método de Amortización: {{ getMetodoAmortizacionTexto() }}</span>
+        </div>
+        <div class="info-content">
+          <p *ngIf="bono.metodoAmortizacion === 'AMERICANO'">
+            <strong>Método Americano:</strong> Los pagos de capital se realizan únicamente al vencimiento del bono. 
+            Durante la vida del bono solo se pagan cupones (intereses), y al final se paga el valor nominal completo 
+            junto con el último cupón.
+          </p>
+          <p *ngIf="bono.metodoAmortizacion === 'ALEMAN'">
+            <strong>Método Alemán:</strong> El capital se amortiza en cuotas constantes a lo largo de la vida del bono. 
+            Los intereses se calculan sobre el saldo pendiente, por lo que las cuotas totales van disminuyendo 
+            progresivamente con cada pago.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Flujo de Caja -->
+    <div class="flujo-section">
+      <div class="section-header">
+        <h2><i class="fas fa-table"></i> Flujo de Caja Detallado</h2>
+        <p>Proyección de pagos basada en los parámetros del bono</p>
+      </div>
+      
+      <div *ngIf="loadingFlujo" class="loading-flujo">
+        <div class="loading-spinner"></div>
+        <p>Calculando flujo de caja...</p>
+      </div>
+      
+      <div *ngIf="!loadingFlujo && flujoCaja && flujoCaja.length > 0" class="flujo-results">
+        <div class="table-container">
+          <table class="flujo-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Fecha</th>
+                <th>Cupón</th>
+                <th>Amortización</th>
+                <th>Flujo Total</th>
+                <th>Saldo Pendiente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let flujo of flujoCaja; index as i" 
+                  [class.final-payment]="i === flujoCaja.length - 1">
+                <td class="periodo">{{ flujo.periodo }}</td>
+                <td class="fecha">{{ formatDate(flujo.fecha) }}</td>
+                <td class="cupon">{{ formatCurrency(flujo.cupon) }}</td>
+                <td class="amortizacion">{{ formatCurrency(flujo.amortizacion) }}</td>
+                <td class="flujo-total">{{ formatCurrency(flujo.flujoTotal) }}</td>
+                <td class="saldo">{{ formatCurrency(flujo.saldoInsoluto) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Resumen de Totales -->
+        <div class="flujo-summary">
+          <div class="summary-card">
+            <div class="summary-label">Total Cupones</div>
+            <div class="summary-value">{{ formatCurrency(getTotalCupones()) }}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Total Amortización</div>
+            <div class="summary-value">{{ formatCurrency(getTotalAmortizacion()) }}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Flujo Total</div>
+            <div class="summary-value destacado">{{ formatCurrency(getTotalFlujo()) }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="!loadingFlujo && (!flujoCaja || flujoCaja.length === 0)" class="no-flujo">
+        <i class="fas fa-chart-line"></i>
+        <h3>Sin datos de flujo</h3>
+        <p>No se pudo cargar el flujo de caja para este bono.</p>
+        <button class="btn btn-primary" (click)="cargarFlujoCaja()">
+          <i class="fas fa-refresh"></i>
+          Reintentar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

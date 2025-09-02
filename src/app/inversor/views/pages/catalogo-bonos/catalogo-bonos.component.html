@@ -1,0 +1,278 @@
+<div class="page-container">
+  <!-- Header estándar con tema verde inversor -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Catálogo de Bonos</h1>
+      <p>Explora y analiza las mejores oportunidades de inversión disponibles en el mercado</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/mis-calculos" class="btn btn-secondary">
+        <i class="icon">🧮</i>
+        Calculadora
+      </a>
+      <a routerLink="/inversor/dashboard" class="btn btn-secondary">
+        <i class="icon">🏠</i>
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab active">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h3>Cargando catálogo</h3>
+      <p>Buscando oportunidades de inversión...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <div class="error-card">
+      <div class="error-icon">
+        <i>⚠️</i>
+      </div>
+      <h3>Error al cargar bonos</h3>
+      <p>{{ error }}</p>
+      <button (click)="cargarCatalogoBonos()" class="btn btn-primary">
+        <i class="icon">🔄</i>
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error" class="main-content">
+    
+    <!-- Sección de filtros colapsables -->
+    <section class="filters-section">
+      <div class="filters-header">
+        <div class="filters-title-section">
+          <h2 class="section-title">
+            <i class="section-icon">🔍</i>
+            Filtros de Búsqueda
+          </h2>
+          <button 
+            class="toggle-filters-btn" 
+            (click)="toggleFiltros()"
+            [class.active]="filtrosVisibles">
+            <i class="toggle-icon">{{ filtrosVisibles ? '▼' : '▶️' }}</i>
+            <span>{{ filtrosVisibles ? 'Ocultar Filtros' : 'Mostrar Filtros' }}</span>
+          </button>
+        </div>
+        <div class="stats-badge">
+          <i class="icon">📋</i>
+          {{ bonos.length }} bonos disponibles
+        </div>
+      </div>
+
+      <!-- Contenedor de filtros colapsable -->
+      <div class="filters-container" [class.expanded]="filtrosVisibles">
+        <div class="filters-content">
+          <div class="filters-grid">
+            <!-- Filtro por moneda -->
+            <div class="filter-group">
+              <label for="filtroMoneda" class="filter-label">
+                <i class="filter-icon">💰</i>
+                Moneda
+              </label>
+              <select 
+                id="filtroMoneda"
+                class="form-control" 
+                [(ngModel)]="filtroMoneda" 
+                (change)="filtrarPorMoneda()">
+                <option value="">Todas las monedas</option>
+                <option value="PEN">Soles Peruanos (PEN)</option>
+                <option value="USD">Dólares Americanos (USD)</option>
+                <option value="EUR">Euros (EUR)</option>
+              </select>
+            </div>
+            
+            <!-- Rango de tasa -->
+            <div class="filter-group">
+              <label for="tasaMinima" class="filter-label">
+                <i class="filter-icon">📊</i>
+                Tasa Mínima (%)
+              </label>
+              <input 
+                id="tasaMinima"
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="tasaMinima" 
+                step="0.1" 
+                min="0" 
+                max="100" 
+                placeholder="0.0">
+            </div>
+            
+            <div class="filter-group">
+              <label for="tasaMaxima" class="filter-label">
+                <i class="filter-icon">📈</i>
+                Tasa Máxima (%)
+              </label>
+              <input 
+                id="tasaMaxima"
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="tasaMaxima" 
+                step="0.1" 
+                min="0" 
+                max="100" 
+                placeholder="100.0">
+            </div>
+            
+            <!-- Acciones de filtro -->
+            <div class="filter-actions">
+              <button class="btn btn-primary" (click)="filtrarPorTasa()" [disabled]="loading">
+                <i class="icon">🔍</i>
+                Aplicar Filtros
+              </button>
+              <button class="btn btn-outline" (click)="limpiarFiltros()" [disabled]="loading">
+                <i class="icon">🧹</i>
+                Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div *ngIf="bonos.length === 0" class="empty-state">
+      <div class="empty-card">
+        <div class="empty-icon">
+          <i>📋</i>
+        </div>
+        <h3>No hay bonos disponibles</h3>
+        <p>No se encontraron bonos que coincidan con tus criterios de búsqueda.</p>
+        <button class="btn btn-primary" (click)="limpiarFiltros()">
+          <i class="icon">🔄</i>
+          Ver Todos los Bonos
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid de Bonos con diseño de calculadora -->
+    <section *ngIf="bonos.length > 0" class="bonos-section">
+      <h2 class="section-title">
+        <i class="section-icon">💎</i>
+        Oportunidades de Inversión
+      </h2>
+      
+      <div class="bonos-grid">
+        <div *ngFor="let bono of bonos; trackBy: trackByBonoId" class="bono-card">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="bono-title">
+              <h3>{{ bono.nombre }}</h3>
+              <div class="emisor-badge">
+                <i class="icon">🏛️</i>
+                {{ bono.emisorNombre || 'Emisor Corporativo' }}
+              </div>
+            </div>
+            <div class="currency-badge">
+              {{ bono.moneda?.codigo || 'USD' }}
+            </div>
+          </div>
+
+          <!-- Financial Highlights -->
+          <div class="card-content">
+            <div class="financial-highlights">
+              <div class="highlight-item primary">
+                <div class="highlight-icon">
+                  <i>💰</i>
+                </div>
+                <div class="highlight-content">
+                  <span class="highlight-label">Valor Nominal</span>
+                  <span class="highlight-value">{{ formatCurrency(bono.valorNominal, bono.moneda?.codigo) }}</span>
+                </div>
+              </div>
+              
+              <div class="highlight-item success">
+                <div class="highlight-icon">
+                  <i>📈</i>
+                </div>
+                <div class="highlight-content">
+                  <span class="highlight-label">Tasa Cupón</span>
+                  <span class="highlight-value rate">{{ bono.tasaCupon }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detalles del bono -->
+            <div class="bono-details">
+              <div class="detail-row">
+                <span class="detail-icon">⏱️</span>
+                <span class="detail-label">Plazo</span>
+                <span class="detail-value">{{ bono.plazoAnios }} años</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-icon">🔄</span>
+                <span class="detail-label">Frecuencia</span>
+                <span class="detail-value">{{ bono.frecuenciaPagos }}/año</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-icon">⚙️</span>
+                <span class="detail-label">Amortización</span>
+                <span class="detail-value">{{ formatMetodoAmortizacion(bono.metodoAmortizacion) }}</span>
+              </div>
+              
+              <div class="detail-row" *ngIf="bono.fechaEmision">
+                <span class="detail-icon">📅</span>
+                <span class="detail-label">Fecha Emisión</span>
+                <span class="detail-value">{{ bono.fechaEmision | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+
+            <!-- Descripción del bono -->
+            <div class="bono-description" *ngIf="bono.descripcion">
+              <p>{{ bono.descripcion }}</p>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="card-actions">
+              <button class="btn btn-primary btn-action" (click)="verDetalleBono(bono)">
+                <i class="icon">👁️</i>
+                Ver Detalles
+              </button>
+              <button class="btn btn-secondary btn-action" (click)="verFlujoCaja(bono)">
+                <i class="icon">💰</i>
+                Ver Flujo de Caja
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Navigation Footer -->
+  <div class="navigation-footer">
+    <a routerLink="/inversor/dashboard" class="btn btn-back">
+      <i class="icon">←</i>
+      Volver al Dashboard
+    </a>
+  </div>
+</div>

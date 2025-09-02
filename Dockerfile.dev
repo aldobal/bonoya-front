@@ -1,0 +1,26 @@
+# Dockerfile para desarrollo - Node.js 20.19.0 LTS
+FROM node:20.19.0-alpine
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Instalar Angular CLI globalmente
+RUN npm install -g @angular/cli@20.0.3
+
+# Copiar package.json y package-lock.json para aprovechar cache de Docker
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm ci
+
+# Copiar el código fuente
+COPY . .
+
+# Crear directorio para Angular cache
+RUN mkdir -p /app/.angular
+
+# Exponer puerto 4200
+EXPOSE 4200
+
+# Comando para desarrollo con hot reload usando configuración Docker
+CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000", "--configuration", "docker"]

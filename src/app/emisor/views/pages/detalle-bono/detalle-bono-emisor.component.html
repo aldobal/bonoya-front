@@ -1,0 +1,320 @@
+<div class="page-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando información del bono...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-message">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Error al cargar</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="volverAMisBonos()">
+        <i class="fas fa-arrow-left"></i>
+        Volver a Mis Bonos
+      </button>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="bono && !loading">
+    <!-- Header estándar -->
+    <header class="page-header">
+      <div class="header-content">
+        <h1>{{ bono.nombre }}</h1>
+        <p>Gestión completa de tu bono corporativo - Información detallada para el emisor</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="volverAMisBonos()">
+          <i class="fas fa-arrow-left"></i>
+          Volver a Mis Bonos
+        </button>
+        <button class="btn btn-success" (click)="verFlujoCaja()">
+          <i class="fas fa-table"></i>
+          Ver Flujo de Caja
+        </button>
+        <button class="btn btn-warning" (click)="editarBono()">
+          <i class="fas fa-edit"></i>
+          Editar
+        </button>
+        <button class="btn btn-danger" (click)="eliminarBono()">
+          <i class="fas fa-trash"></i>
+          Eliminar
+        </button>
+      </div>
+    </header>
+
+    <!-- Statistics Cards - Métricas Clave del Emisor -->
+    <section class="stats-section">
+      <h2 class="section-title">
+        <i class="fas fa-chart-line"></i>
+        Métricas Financieras Clave
+      </h2>
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Valor Nominal</h3>
+            <p class="stat-number">{{ formatCurrency(bono.valorNominal) }}</p>
+            <span class="stat-label">Capital a devolver</span>
+          </div>
+        </div>
+
+        <div class="stat-card success">
+          <div class="stat-icon">
+            <i class="fas fa-percent"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Tasa Cupón</h3>
+            <p class="stat-number">{{ formatPercentage(bono.tasaCupon) }}</p>
+            <span class="stat-label">Interés que pagas</span>
+          </div>
+        </div>
+
+        <div class="stat-card warning">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Plazo Total</h3>
+            <p class="stat-number">{{ bono.plazoAnios }}</p>
+            <span class="stat-label">Años de vigencia</span>
+          </div>
+        </div>
+
+        <div class="stat-card info">
+          <div class="stat-icon">
+            <i class="fas fa-sync"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Frecuencia de Pagos</h3>
+            <p class="stat-number">{{ bono.frecuenciaPagos }}x</p>
+            <span class="stat-label">Pagos por año</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Información Básica del Bono -->
+    <section class="info-section">
+      <h2 class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Información del Bono
+      </h2>
+      <div class="info-explanation">
+        <p>Información esencial de tu bono para gestionar adecuadamente tus obligaciones financieras como emisor.</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-tag"></i>
+            <h4>Identificación del Bono</h4>
+          </div>
+          <div class="info-content">
+            <div class="info-item">
+              <label>Nombre del Bono:</label>
+              <span>{{ bono.nombre }}</span>
+            </div>
+            <div class="info-item">
+              <label>Descripción:</label>
+              <span>{{ bono.descripcion || 'No especificado' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Moneda:</label>
+              <span>{{ bono.moneda?.codigo }} - {{ bono.moneda?.nombre }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-coins"></i>
+            <h4>Obligaciones Financieras</h4>
+          </div>
+          <div class="info-content">
+            <div class="info-item highlight">
+              <label>Capital Principal:</label>
+              <span class="amount">{{ formatCurrency(bono.valorNominal) }}</span>
+            </div>
+            <div class="info-item highlight">
+              <label>Tasa de Interés:</label>
+              <span class="rate">{{ formatPercentage(bono.tasaCupon) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Método de Pago:</label>
+              <span>{{ bono.metodoAmortizacion }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cronograma y Fechas -->
+    <section class="info-section">
+      <h2 class="section-title">
+        <i class="fas fa-calendar"></i>
+        Cronograma de Pagos
+      </h2>
+      <div class="info-explanation">
+        <p>Como emisor, debes cumplir con este cronograma de pagos. Cada fecha es una obligación financiera que debes planificar en tu flujo de caja empresarial.</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-play-circle"></i>
+            <h4>Fechas Importantes</h4>
+          </div>
+          <div class="info-content">
+            <div class="info-item">
+              <label>Fecha de Emisión:</label>
+              <span>{{ formatDate(bono.fechaEmision) }}</span>
+            </div>
+            <div class="info-item important">
+              <label>Plazo del Bono:</label>
+              <span>{{ bono.plazoAnios }} años</span>
+            </div>
+            <div class="info-item">
+              <label>Frecuencia de Cupones:</label>
+              <span>{{ bono.frecuenciaPagos }} veces al año</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-cogs"></i>
+            <h4>Estructura de Pagos</h4>
+          </div>
+          <div class="info-content">
+            <div class="info-item">
+              <label>Duración Total:</label>
+              <span>{{ bono.plazoAnios }} años</span>
+            </div>
+            <div class="info-item">
+              <label>Pagos por Año:</label>
+              <span>{{ bono.frecuenciaPagos }} veces</span>
+            </div>
+            <div class="info-item">
+              <label>Método de Amortización:</label>
+              <span>{{ bono.metodoAmortizacion }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Información de Plazo de Gracia (solo si es relevante) -->
+    <section class="info-section" *ngIf="bono.plazoGracia && bono.plazoGracia.tipo !== 'NINGUNO'">
+      <h2 class="section-title">
+        <i class="fas fa-clock"></i>
+        Período de Gracia
+      </h2>
+      <div class="info-explanation">
+        <p>Tu bono incluye un período de gracia que te permite diferir ciertos pagos al inicio. Aprovecha este beneficio para planificar tu flujo de caja.</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-pause-circle"></i>
+            <h4>Beneficios de Gracia</h4>
+          </div>
+          <div class="info-content">
+            <div class="info-item" *ngIf="bono.plazoGracia?.tipo">
+              <label>Tipo de Gracia:</label>
+              <span>{{ bono.plazoGracia.tipo }}</span>
+            </div>
+            <div class="info-item" *ngIf="bono.plazoGracia?.periodos !== undefined && (bono.plazoGracia?.periodos || 0) > 0">
+              <label>Períodos de Diferimiento:</label>
+              <span>{{ bono.plazoGracia.periodos }} período(s)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Análisis Financiero Básico -->
+    <section class="info-section">
+      <h2 class="section-title">
+        <i class="fas fa-chart-line"></i>
+        Análisis Financiero Básico
+      </h2>
+      <div class="info-explanation">
+        <p>Como emisor, estos son los datos clave de tu obligación financiera. Para análisis avanzados, utiliza el flujo de caja detallado.</p>
+      </div>
+      <div class="risk-analysis">
+        <div class="risk-card info">
+          <div class="risk-icon">
+            <i class="fas fa-percent"></i>
+          </div>
+          <div class="risk-content">
+            <h4>Tasa Cupón</h4>
+            <p>Pagas <strong>{{ formatPercentage(bono.tasaCupon) }}</strong> sobre el valor nominal como interés.</p>
+          </div>
+        </div>
+
+        <div class="risk-card info">
+          <div class="risk-icon">
+            <i class="fas fa-calculator"></i>
+          </div>
+          <div class="risk-content">
+            <h4>Pago Anual de Intereses</h4>
+            <p>Pagarás aproximadamente <strong>{{ formatCurrency(bono.valorNominal * (bono.tasaCupon > 1 ? bono.tasaCupon / 100 : bono.tasaCupon)) }}</strong> por año en intereses</p>
+          </div>
+        </div>
+
+        <div class="risk-card info">
+          <div class="risk-icon">
+            <i class="fas fa-coins"></i>
+          </div>
+          <div class="risk-content">
+            <h4>Capital a Devolver</h4>
+            <p>Al vencimiento deberás devolver <strong>{{ formatCurrency(bono.valorNominal) }}</strong> de capital principal</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recomendaciones para el Emisor -->
+    <section class="info-section">
+      <h2 class="section-title">
+        <i class="fas fa-lightbulb"></i>
+        Recomendaciones de Gestión
+      </h2>
+      <div class="recommendations">
+        <div class="recommendation-card">
+          <div class="recommendation-icon">
+            <i class="fas fa-piggy-bank"></i>
+          </div>
+          <div class="recommendation-content">
+            <h4>Reserva de Liquidez</h4>
+            <p>Mantén una reserva de al menos el 25% del pago anual de cupones para asegurar el cumplimiento de pagos.</p>
+          </div>
+        </div>
+
+        <div class="recommendation-card">
+          <div class="recommendation-icon">
+            <i class="fas fa-chart-bar"></i>
+          </div>
+          <div class="recommendation-content">
+            <h4>Monitoreo de Flujo</h4>
+            <p>Revisa mensualmente tu flujo de caja para asegurar que puedes cumplir con los pagos programados.</p>
+          </div>
+        </div>
+
+        <div class="recommendation-card">
+          <div class="recommendation-icon">
+            <i class="fas fa-bell"></i>
+          </div>
+          <div class="recommendation-content">
+            <h4>Alertas de Pago</h4>
+            <p>Configura recordatorios con 30 días de anticipación para cada fecha de pago de cupón.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

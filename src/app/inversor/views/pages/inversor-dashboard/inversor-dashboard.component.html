@@ -1,0 +1,256 @@
+<div class="page-container">
+  <!-- Header estándar con tema verde inversor -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Dashboard del Inversor</h1>
+      <p>Bienvenido al panel de inversiones. Explora oportunidades y analiza bonos corporativos.</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+        <i class="icon">🏪</i>
+        Catálogo
+      </a>
+      <button (click)="logout()" class="btn btn-outline">
+        <i class="icon">🚪</i>
+        Cerrar Sesión
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab active">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <!-- Bienvenida personalizada -->
+    <section class="welcome-section">
+      <div class="welcome-card">
+        <div class="welcome-header">
+          <div class="welcome-icon">
+            <i>👋</i>
+          </div>
+          <div class="welcome-content">
+            <h2>¡Bienvenido de vuelta!</h2>
+            <p>Explora las mejores oportunidades de inversión en bonos corporativos</p>
+          </div>
+        </div>
+        <div class="welcome-stats">
+          <div class="stat-item">
+            <span class="stat-icon">🏪</span>
+            <span class="stat-label">Bonos Disponibles</span>
+            <span class="stat-value">12+</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">📊</span>
+            <span class="stat-label">Herramientas</span>
+            <span class="stat-value">4</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Acciones Rápidas -->
+    <section class="actions-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="section-icon">⚡</i>
+          Acciones Rápidas
+        </h2>
+      </div>
+      
+      <div class="actions-grid">
+        <a routerLink="/inversor/catalogo" class="action-card primary">
+          <div class="action-icon">
+            <i>🏪</i>
+          </div>
+          <div class="action-content">
+            <h3>Explorar Catálogo</h3>
+            <p>Descubre todos los bonos disponibles para inversión</p>
+            <div class="action-features">
+              <span class="feature-tag">🔍 Búsqueda avanzada</span>
+              <span class="feature-tag">📊 Comparación</span>
+            </div>
+          </div>
+          <div class="action-arrow">
+            <i>→</i>
+          </div>
+        </a>
+        
+        <a routerLink="/inversor/mis-calculos" class="action-card success">
+          <div class="action-icon">
+            <i>🧮</i>
+          </div>
+          <div class="action-content">
+            <h3>Calculadora Financiera</h3>
+            <p>Herramientas avanzadas de análisis y cálculo</p>
+            <div class="action-features">
+              <span class="feature-tag">📈 TREA</span>
+              <span class="feature-tag">💸 Flujo</span>
+            </div>
+          </div>
+          <div class="action-arrow">
+            <i>→</i>
+          </div>
+        </a>
+
+        <a routerLink="/inversor/historial" class="action-card info">
+          <div class="action-icon">
+            <i>📈</i>
+          </div>
+          <div class="action-content">
+            <h3>Historial de Análisis</h3>
+            <p>Revisa tus cálculos y análisis anteriores</p>
+            <div class="action-features">
+              <span class="feature-tag">🗂️ Historial</span>
+              <span class="feature-tag">🔄 Repetir</span>
+            </div>
+          </div>
+          <div class="action-arrow">
+            <i>→</i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Herramientas Disponibles -->
+    <section class="tools-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="section-icon">🛠️</i>
+          Herramientas de Análisis
+        </h2>
+        <div class="stats-badge">
+          <i class="icon">⚡</i>
+          4 herramientas disponibles
+        </div>
+      </div>
+      
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon primary">
+              <i>📊</i>
+            </div>
+            <h3>TREA Calculator</h3>
+          </div>
+          <div class="tool-content">
+            <p>Calcula la Tasa de Rendimiento Efectiva Anual de cualquier bono del catálogo</p>
+            <ul class="tool-features">
+              <li><i class="check-icon">✓</i> Cálculo preciso de rendimiento</li>
+              <li><i class="check-icon">✓</i> Basado en bonos reales</li>
+              <li><i class="check-icon">✓</i> Resultados instantáneos</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon success">
+              <i>🔍</i>
+            </div>
+            <h3>Análisis Completo</h3>
+          </div>
+          <div class="tool-content">
+            <p>Análisis financiero integral con múltiples métricas de evaluación</p>
+            <ul class="tool-features">
+              <li><i class="check-icon">✓</i> Valor presente</li>
+              <li><i class="check-icon">✓</i> Duración y convexidad</li>
+              <li><i class="check-icon">✓</i> Análisis de riesgo</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon info">
+              <i>💸</i>
+            </div>
+            <h3>Flujo Financiero</h3>
+          </div>
+          <div class="tool-content">
+            <p>Visualiza el flujo de caja completo del bono período por período</p>
+            <ul class="tool-features">
+              <li><i class="check-icon">✓</i> Cupones por período</li>
+              <li><i class="check-icon">✓</i> Amortización del principal</li>
+              <li><i class="check-icon">✓</i> Resumen total</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon warning">
+              <i>🏪</i>
+            </div>
+            <h3>Catálogo Integrado</h3>
+          </div>
+          <div class="tool-content">
+            <p>Acceso directo a todos los bonos disponibles para análisis</p>
+            <ul class="tool-features">
+              <li><i class="check-icon">✓</i> Bonos verificados</li>
+              <li><i class="check-icon">✓</i> Información completa</li>
+              <li><i class="check-icon">✓</i> Datos actualizados</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Información adicional -->
+    <section class="info-section">
+      <div class="info-card">
+        <div class="info-header">
+          <div class="info-icon">
+            <i>💡</i>
+          </div>
+          <div class="info-content">
+            <h3>¿Nuevo en inversiones en bonos?</h3>
+            <p>Nuestras herramientas te ayudan a tomar decisiones informadas</p>
+          </div>
+        </div>
+        <div class="info-body">
+          <div class="info-points">
+            <div class="info-point">
+              <span class="point-icon">🎯</span>
+              <div class="point-content">
+                <h4>Análisis Basado en Datos Reales</h4>
+                <p>Todos los cálculos se basan en bonos reales del catálogo</p>
+              </div>
+            </div>
+            <div class="info-point">
+              <span class="point-icon">📊</span>
+              <div class="point-content">
+                <h4>Métricas Profesionales</h4>
+                <p>TREA, valor presente, duración y análisis de flujo</p>
+              </div>
+            </div>
+            <div class="info-point">
+              <span class="point-icon">⚡</span>
+              <div class="point-content">
+                <h4>Resultados Instantáneos</h4>
+                <p>Cálculos rápidos y precisos para tomar decisiones</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

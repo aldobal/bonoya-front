@@ -1,0 +1,185 @@
+<div class="page-container">
+  <!-- Header estándar -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Dashboard del Emisor</h1>
+      <p>Bienvenido, {{ currentUser?.username }}. Gestiona tus bonos corporativos desde un solo lugar.</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="logout()" class="btn btn-secondary">
+        <i class="icon">�</i>
+        Cerrar Sesión
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="navigation-tabs">
+    <a routerLink="/emisor/dashboard" class="nav-tab active">
+      <i class="icon">�</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/emisor/bonos" class="nav-tab">
+      <i class="icon">📋</i>
+      <span>Mis Bonos</span>
+    </a>
+    <a routerLink="/emisor/bonos/nuevo" class="nav-tab">
+      <i class="icon">➕</i>
+      <span>Crear Bono</span>
+    </a>
+  </nav>
+
+  <!-- Statistics Cards -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i>📄</i>
+        </div>
+        <div class="stat-content">
+          <h3>Total de Bonos</h3>
+          <p class="stat-number">{{ totalBonos }}</p>
+          <span class="stat-label">Bonos emitidos</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i>✅</i>
+        </div>
+        <div class="stat-content">
+          <h3>Bonos Activos</h3>
+          <p class="stat-number">{{ bonosActivos }}</p>
+          <span class="stat-label">En circulación</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i>💰</i>
+        </div>
+        <div class="stat-content">
+          <h3>Monto Total</h3>
+          <p class="stat-number">${{ montoTotalEmitido | number:'1.2-2' }}</p>
+          <span class="stat-label">Capital emitido</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="actions-section">
+    <h2 class="section-title">Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a routerLink="/emisor/bonos/nuevo" class="action-card">
+        <div class="action-icon">
+          <i>➕</i>
+        </div>
+        <div class="action-content">
+          <h3>Crear Nuevo Bono</h3>
+          <p>Emitir un nuevo bono corporativo</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+      
+      <a routerLink="/emisor/bonos" class="action-card">
+        <div class="action-icon">
+          <i>📋</i>
+        </div>
+        <div class="action-content">
+          <h3>Ver Mis Bonos</h3>
+          <p>Gestionar bonos existentes</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Information Section -->
+  <section class="info-section">
+    <h2 class="section-title">Información del Sistema</h2>
+    
+    <!-- Methods Grid -->
+    <div class="methods-grid">
+      <!-- Método Americano -->
+      <div class="method-card">
+        <div class="method-header">
+          <div class="method-icon american">
+            <i>🇺🇸</i>
+          </div>
+          <div class="method-title">
+            <h3>Método Americano</h3>
+            <span class="method-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="method-content">
+          <p>Sistema de amortización con pago de intereses periódicos y devolución del principal al vencimiento.</p>
+          <ul class="feature-list">
+            <li><i class="check-icon">✓</i> Pago de intereses periódicos</li>
+            <li><i class="check-icon">✓</i> Principal al vencimiento</li>
+            <li><i class="check-icon">✓</i> Flujos de caja uniformes</li>
+            <li><i class="check-icon">✓</i> Menor riesgo de liquidez</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Método Alemán -->
+      <div class="method-card">
+        <div class="method-header">
+          <div class="method-icon german">
+            <i>��</i>
+          </div>
+          <div class="method-title">
+            <h3>Método Alemán</h3>
+            <span class="method-badge">Disponible</span>
+          </div>
+        </div>
+        <div class="method-content">
+          <p>Sistema de amortización con cuotas de capital constantes e intereses decrecientes sobre saldos pendientes.</p>
+          <ul class="feature-list">
+            <li><i class="check-icon">✓</i> Cuotas de capital constantes</li>
+            <li><i class="check-icon">✓</i> Intereses sobre saldo pendiente</li>
+            <li><i class="check-icon">✓</i> Cuotas totales decrecientes</li>
+            <li><i class="check-icon">✓</i> Amortización lineal del capital</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sistema Features -->
+    <div class="system-features">
+      <div class="features-header">
+        <div class="features-icon">
+          <i>⚙️</i>
+        </div>
+        <h3>Características del Sistema</h3>
+      </div>
+      <div class="features-grid">
+        <div class="feature-item">
+          <i class="feature-icon">📊</i>
+          <span>Cálculo automático de TCEA</span>
+        </div>
+        <div class="feature-item">
+          <i class="feature-icon">🕒</i>
+          <span>Plazos de gracia flexibles</span>
+        </div>
+        <div class="feature-item">
+          <i class="feature-icon">💱</i>
+          <span>Múltiples monedas</span>
+        </div>
+        <div class="feature-item">
+          <i class="feature-icon">📈</i>
+          <span>Análisis de rentabilidad</span>
+        </div>
+        <div class="feature-item">
+          <i class="feature-icon">🔒</i>
+          <span>Seguridad financiera</span>
+        </div>
+        <div class="feature-item">
+          <i class="feature-icon">📋</i>
+          <span>Reportes detallados</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div> 

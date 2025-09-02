@@ -1,0 +1,191 @@
+<div class="page-container">
+  <!-- Header estándar con tema verde inversor -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Flujo de Caja del Bono</h1>
+      <p *ngIf="bono">Análisis detallado del flujo de caja: {{ bono.nombre }}</p>
+      <p *ngIf="!bono">Análisis detallado del flujo de caja del bono</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+        <i class="icon">🏪</i>
+        Catálogo
+      </a>
+      <a routerLink="/inversor/dashboard" class="btn btn-secondary">
+        <i class="icon">🏠</i>
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h3>Cargando flujo de caja</h3>
+      <p>Analizando datos del bono...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <div class="error-card">
+      <div class="error-icon">⚠️</div>
+      <h3>Error al cargar</h3>
+      <p>{{ error }}</p>
+      <div class="error-actions">
+        <button class="btn btn-primary" (click)="cargarDatos()">
+          <i class="icon">🔄</i>
+          Reintentar
+        </button>
+        <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+          <i class="icon">←</i>
+          Volver al Catálogo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <main class="content-area" *ngIf="!loading && !error">
+    <!-- Información del Bono -->
+    <section class="bono-summary" *ngIf="bono">
+      <div class="summary-card">
+        <div class="card-header">
+          <h2>
+            <i class="icon">📊</i>
+            {{ bono.nombre }}
+          </h2>
+          <div class="card-subtitle">Información general del bono</div>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Emisor:</span>
+              <span class="value">{{ bono.emisorNombre || 'Emisor Corporativo' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Valor Nominal:</span>
+              <span class="value highlight">{{ bono.moneda?.codigo || '$' }} {{ bono.valorNominal | number:'1.2-2' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Tasa Cupón:</span>
+              <span class="value rate-highlight">{{ bono.tasaCupon }}%</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Plazo:</span>
+              <span class="value">{{ bono.plazoAnios }} años</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Frecuencia de Pagos:</span>
+              <span class="value">{{ bono.frecuenciaPagos }} veces por año</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flujo de Caja -->
+    <section class="flujo-section">
+      <div class="section-header">
+        <h2>
+          <i class="icon">💰</i>
+          Flujo de Caja Detallado
+        </h2>
+        <p>Proyección de pagos y amortizaciones del bono</p>
+      </div>
+
+      <!-- Error en flujo -->
+      <div *ngIf="errorFlujo" class="error-state">
+        <div class="error-card">
+          <div class="error-icon">❌</div>
+          <h3>Error en flujo de caja</h3>
+          <p>{{ errorFlujo }}</p>
+          <div class="error-actions">
+            <button class="btn btn-primary" (click)="calcularFlujo()">
+              <i class="icon">🔄</i>
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin datos -->
+      <div *ngIf="!loadingFlujo && !errorFlujo && flujoCaja.length === 0" class="empty-state">
+        <div class="empty-card">
+          <div class="empty-icon">📋</div>
+          <h3>Sin datos de flujo de caja</h3>
+          <p>No se encontraron datos para el bono ID {{ bonoId }}</p>
+          <div class="empty-suggestions">
+            <h4>Posibles soluciones:</h4>
+            <ul>
+              <li>Verificar que el bono tenga flujo de caja configurado</li>
+              <li>Probar con un ID de bono diferente</li>
+              <li>Contactar al administrador del sistema</li>
+            </ul>
+          </div>
+          <div class="empty-actions">
+            <button class="btn btn-primary" (click)="calcularFlujo()" [disabled]="loadingFlujo">
+              <i class="icon">🔄</i>
+              Reintentar
+            </button>
+            <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+              <i class="icon">←</i>
+              Volver al Catálogo
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de flujo -->
+      <div *ngIf="flujoCaja.length > 0" class="flujo-table-container">
+        <div class="table-wrapper">
+          <table class="flujo-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Fecha</th>
+                <th>Cupón</th>
+                <th>Amortización</th>
+                <th>Flujo Total</th>
+                <th>Saldo</th>
+                <th>Valor Presente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let flujo of flujoCaja; let i = index" [class.even]="i % 2 === 0">
+                <td class="period">{{ flujo.periodo }}</td>
+                <td class="date">{{ flujo.fecha }}</td>
+                <td class="amount">{{ flujo.cupon | number:'1.2-2' }}</td>
+                <td class="amount">{{ flujo.amortizacion | number:'1.2-2' }}</td>
+                <td class="amount total">{{ flujo.flujoTotal | number:'1.2-2' }}</td>
+                <td class="amount">{{ flujo.saldoInsoluto | number:'1.2-2' }}</td>
+                <td class="amount present">{{ flujo.valorPresente | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

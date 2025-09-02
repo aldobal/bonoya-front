@@ -1,0 +1,708 @@
+<div class="page-container">
+  <!-- Header estándar con tema verde inversor -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Calculadora Financiera</h1>
+      <p>Análisis y cálculos financieros basados en bonos reales del catálogo</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+        <i class="icon">🏪</i>
+        Catálogo
+      </a>
+      <a routerLink="/inversor/dashboard" class="btn btn-secondary">
+        <i class="icon">🏠</i>
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab active">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h3>Cargando bonos</h3>
+      <p>Preparando herramientas de análisis...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <div class="error-card">
+      <div class="error-icon">
+        <i>⚠️</i>
+      </div>
+      <h3>Error al cargar bonos</h3>
+      <p>{{ error }}</p>
+      <button (click)="cargarBonos()" class="btn btn-primary">
+        <i class="icon">🔄</i>
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error" class="main-content">
+    
+    <!-- Sección de selección de bono -->
+    <section class="bono-selection-section" *ngIf="!bonoSeleccionado">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="section-icon">🔍</i>
+          Seleccionar Bono para Análisis
+        </h2>
+        <div class="stats-badge">
+          <i class="icon">📋</i>
+          {{ bonosDisponibles.length }} bonos disponibles
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="bonosDisponibles.length === 0" class="empty-state">
+        <div class="empty-card">
+          <div class="empty-icon">
+            <i>📋</i>
+          </div>
+          <h3>No hay bonos disponibles</h3>
+          <p>No se encontraron bonos en el catálogo para realizar análisis.</p>
+          <a routerLink="/inversor/catalogo" class="btn btn-primary">
+            <i class="icon">🏪</i>
+            Ir al Catálogo
+          </a>
+        </div>
+      </div>
+
+      <!-- Grid de Bonos para selección -->
+      <div *ngIf="bonosDisponibles.length > 0" class="bonos-grid">
+        <div *ngFor="let bono of bonosDisponibles; trackBy: trackByBonoId" class="bono-card selectable">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="bono-title">
+              <h3>{{ bono.nombre }}</h3>
+              <div class="emisor-badge">
+                <i class="icon">🏛️</i>
+                {{ bono.emisorNombre || 'Emisor Corporativo' }}
+              </div>
+            </div>
+            <div class="currency-badge">
+              {{ bono.moneda?.codigo || 'USD' }}
+            </div>
+          </div>
+
+          <!-- Financial Highlights -->
+          <div class="card-content">
+            <div class="financial-highlights">
+              <div class="highlight-item primary">
+                <div class="highlight-icon">
+                  <i>💰</i>
+                </div>
+                <div class="highlight-content">
+                  <span class="highlight-label">Valor Nominal</span>
+                  <span class="highlight-value">{{ formatCurrency(bono.valorNominal, bono.moneda?.codigo) }}</span>
+                </div>
+              </div>
+              
+              <div class="highlight-item success">
+                <div class="highlight-icon">
+                  <i>📈</i>
+                </div>
+                <div class="highlight-content">
+                  <span class="highlight-label">Tasa Cupón</span>
+                  <span class="highlight-value rate">{{ bono.tasaCupon }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detalles del bono -->
+            <div class="bono-details">
+              <div class="detail-row">
+                <span class="detail-icon">⏱️</span>
+                <span class="detail-label">Plazo</span>
+                <span class="detail-value">{{ bono.plazoAnios }} años</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-icon">🔄</span>
+                <span class="detail-label">Frecuencia</span>
+                <span class="detail-value">{{ bono.frecuenciaPagos }}/año</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Actions -->
+          <div class="card-actions">
+            <button class="btn btn-primary btn-action" (click)="seleccionarBono(bono)">
+              <i class="icon">🧮</i>
+              Analizar
+            </button>
+            <button class="btn btn-outline btn-action" (click)="verDetalleBono(bono)">
+              <i class="icon">👁️</i>
+              Detalles
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de calculadora y análisis -->
+    <section class="calculator-section" *ngIf="bonoSeleccionado">
+      <!-- Header del bono seleccionado -->
+      <div class="selected-bono-header">
+        <div class="selected-bono-info">
+          <div class="bono-identity">
+            <h2 class="bono-name">{{ bonoSeleccionado.nombre }}</h2>
+            <div class="emisor-info">
+              <i class="icon">🏛️</i>
+              <span>{{ bonoSeleccionado.emisorNombre || 'Emisor Corporativo' }}</span>
+            </div>
+          </div>
+          <div class="bono-key-metrics">
+            <div class="metric">
+              <span class="metric-label">Valor Nominal</span>
+              <span class="metric-value">{{ formatCurrency(bonoSeleccionado.valorNominal, bonoSeleccionado.moneda?.codigo) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Tasa Cupón</span>
+              <span class="metric-value">{{ bonoSeleccionado.tasaCupon }}%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Plazo</span>
+              <span class="metric-value">{{ bonoSeleccionado.plazoAnios }} años</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" (click)="cambiarBono()">
+            <i class="icon">🔄</i>
+            Cambiar Bono
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel de entrada de parámetros -->
+      <div class="calculation-input-panel">
+        <h3 class="panel-title">
+          <i class="icon">⚙️</i>
+          Parámetros de Análisis
+        </h3>
+        
+        <!-- Información explicativa -->
+        <div class="info-panel">
+          <div class="info-header">
+            <i class="icon">💡</i>
+            <span>¿Cómo funciona el análisis?</span>
+          </div>
+          <p class="info-text">
+            El análisis completo evalúa si vale la pena comprar este bono al precio especificado, 
+            considerando tu expectativa de rentabilidad. Te mostrará el VAN, TIR, precio justo y 
+            otras métricas clave para tomar una decisión informada.
+          </p>
+        </div>
+        
+        <div class="input-grid">
+          <div class="input-group">
+            <label for="precioCompra" class="input-label">
+              Precio de Compra
+              <span class="input-helper">Precio al que planeas comprar el bono</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="input-icon">💰</i>
+              <input 
+                id="precioCompra"
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="precioCompra" 
+                step="0.01" 
+                min="0"
+                placeholder="Ejemplo: {{ bonoSeleccionado.valorNominal }}">
+              <span class="input-suffix">{{ bonoSeleccionado.moneda?.codigo || 'USD' }}</span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="tasaEsperada" class="input-label">
+              Tasa de Retorno Esperada
+              <span class="input-helper">Tu expectativa de rentabilidad anual</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="input-icon">�</i>
+              <input 
+                id="tasaEsperada"
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="tasaEsperada" 
+                step="0.01" 
+                min="0"
+                max="100"
+                placeholder="Ejemplo: {{ bonoSeleccionado.tasaCupon }}">
+              <span class="input-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="cantidad" class="input-label">
+              Cantidad de Bonos
+              <span class="input-helper">Para calcular el impacto total</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="input-icon">📊</i>
+              <input 
+                id="cantidad"
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="cantidad" 
+                step="1" 
+                min="1"
+                placeholder="1">
+              <span class="input-suffix">bonos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+          <button 
+            class="btn btn-primary" 
+            (click)="calcularTREA()" 
+            [disabled]="!precioCompra || calculando">
+            <i class="icon">📊</i>
+            {{ calculando ? 'Calculando...' : 'Calcular TREA' }}
+          </button>
+          
+          <button 
+            class="btn btn-success" 
+            (click)="realizarAnalisis()" 
+            [disabled]="!precioCompra || !tasaEsperada || calculando">
+            <i class="icon">🔍</i>
+            {{ calculando ? 'Analizando...' : 'Análisis Completo' }}
+          </button>
+          
+          <button 
+            class="btn btn-info" 
+            (click)="calcularFlujoFinanciero()" 
+            [disabled]="!precioCompra || calculando">
+            <i class="icon">💸</i>
+            {{ calculando ? 'Generando...' : 'Flujo Financiero' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Resultados de cálculos -->
+      <div class="results-section" *ngIf="resultado || analisisResultado || flujoFinanciero">
+        
+        <!-- Resultado TREA -->
+        <div class="result-card trea-result" *ngIf="resultado">
+          <div class="result-header">
+            <h3>
+              <i class="icon">📊</i>
+              Tasa de Rendimiento Efectiva Anual (TREA)
+            </h3>
+          </div>
+          <div class="result-content">
+            <div class="trea-value">
+              <span class="trea-number">{{ resultado.trea }}%</span>
+              <span class="trea-label">TREA</span>
+            </div>
+            <div class="result-details">
+              <div class="detail-item">
+                <span class="detail-label">Rendimiento anual efectivo</span>
+                <span class="detail-value">{{ resultado.trea }}%</span>
+              </div>
+              <div class="detail-item" *ngIf="resultado.valorPresente">
+                <span class="detail-label">Valor Presente</span>
+                <span class="detail-value">{{ formatCurrency(resultado.valorPresente, bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultado Análisis -->
+        <div class="result-card analysis-result" *ngIf="analisisResultado">
+          <div class="result-header">
+            <h3>
+              <i class="icon">🔍</i>
+              Análisis Financiero Completo
+            </h3>
+            <div class="analysis-badge">
+              <span class="badge-text">{{ getRendimientoLabel(analisisResultado.trea) }}</span>
+            </div>
+          </div>
+          <div class="result-content">
+            
+            <!-- Métricas principales -->
+            <div class="analysis-grid">
+              <div class="analysis-metric primary">
+                <span class="metric-icon">📊</span>
+                <span class="metric-name">TREA</span>
+                <span class="metric-value success">{{ formatPercentage(analisisResultado.trea) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.tcea">
+                <span class="metric-icon">💹</span>
+                <span class="metric-name">TCEA</span>
+                <span class="metric-value">{{ formatPercentage(analisisResultado.tcea) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.rentabilidadTotal">
+                <span class="metric-icon">�</span>
+                <span class="metric-name">Rentabilidad Total</span>
+                <span class="metric-value">{{ formatPercentage(analisisResultado.rentabilidadTotal) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.duracion">
+                <span class="metric-icon">⏱️</span>
+                <span class="metric-name">Duración</span>
+                <span class="metric-value">{{ formatNumber(analisisResultado.duracion, 1) }} años</span>
+              </div>
+              <!-- Nuevas métricas del análisis completo -->
+              <div class="analysis-metric" *ngIf="analisisResultado.tir">
+                <span class="metric-icon">📈</span>
+                <span class="metric-name">TIR</span>
+                <span class="metric-value">{{ formatPercentage(analisisResultado.tir) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.van !== undefined">
+                <span class="metric-icon">💰</span>
+                <span class="metric-name">VAN</span>
+                <span class="metric-value" [class.success]="analisisResultado.van > 0" [class.warning]="analisisResultado.van < 0">
+                  {{ formatCurrency(analisisResultado.van, analisisResultado.moneda) }}
+                </span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.valorPresenteCupones">
+                <span class="metric-icon">🎫</span>
+                <span class="metric-name">VP Cupones</span>
+                <span class="metric-value">{{ formatCurrency(analisisResultado.valorPresenteCupones, analisisResultado.moneda) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.precioJusto">
+                <span class="metric-icon">⚖️</span>
+                <span class="metric-name">Precio Justo</span>
+                <span class="metric-value">{{ formatCurrency(analisisResultado.precioJusto, analisisResultado.moneda) }}</span>
+              </div>
+              <!-- Métricas adicionales del análisis completo -->
+              <div class="analysis-metric" *ngIf="analisisResultado.yield">
+                <span class="metric-icon">📊</span>
+                <span class="metric-name">Yield</span>
+                <span class="metric-value">{{ formatPercentage(analisisResultado.yield) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.sensibilidadPrecio">
+                <span class="metric-icon">📉</span>
+                <span class="metric-name">Sensibilidad Precio</span>
+                <span class="metric-value">{{ formatPercentage(analisisResultado.sensibilidadPrecio) }}</span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.gananciaCapital !== undefined">
+                <span class="metric-icon">📈</span>
+                <span class="metric-name">Ganancia Capital</span>
+                <span class="metric-value" [class.success]="analisisResultado.gananciaCapital > 0" [class.warning]="analisisResultado.gananciaCapital < 0">
+                  {{ formatCurrency(analisisResultado.gananciaCapital, analisisResultado.moneda) }}
+                </span>
+              </div>
+              <div class="analysis-metric" *ngIf="analisisResultado.ingresosCupones">
+                <span class="metric-icon">💸</span>
+                <span class="metric-name">Ingresos Cupones</span>
+                <span class="metric-value">{{ formatCurrency(analisisResultado.ingresosCupones, analisisResultado.moneda) }}</span>
+              </div>
+            </div>
+
+            <!-- Explicación de métricas clave -->
+            <div class="metrics-explanation">
+              <h4 class="explanation-title">
+                <i class="icon">📚</i>
+                ¿Qué significan estas métricas?
+              </h4>
+              <div class="explanation-grid">
+                <div class="explanation-item" *ngIf="analisisResultado.van !== undefined">
+                  <div class="explanation-header">
+                    <span class="explanation-icon" [class.success]="analisisResultado.van > 0" [class.warning]="analisisResultado.van < 0">
+                      {{ analisisResultado.van > 0 ? '✅' : '❌' }}
+                    </span>
+                    <span class="explanation-name">VAN (Valor Actual Neto)</span>
+                  </div>
+                  <p class="explanation-text">
+                    <strong>{{ formatCurrency(analisisResultado.van, analisisResultado.moneda) }}</strong><br>
+                    {{ analisisResultado.van > 0 ? 
+                      'VAN positivo: La inversión genera valor. Se recomienda COMPRAR.' : 
+                      'VAN negativo: La inversión destruye valor. Se recomienda NO COMPRAR.' }}
+                  </p>
+                </div>
+                
+                <div class="explanation-item" *ngIf="analisisResultado.tir">
+                  <div class="explanation-header">
+                    <span class="explanation-icon">📈</span>
+                    <span class="explanation-name">TIR (Tasa Interna de Retorno)</span>
+                  </div>
+                  <p class="explanation-text">
+                    <strong>{{ formatPercentage(analisisResultado.tir) }}</strong><br>
+                    {{ analisisResultado.tir > tasaEsperada ? 
+                      'TIR superior a tu expectativa (' + formatPercentage(tasaEsperada) + '). Buena oportunidad.' : 
+                      'TIR inferior a tu expectativa (' + formatPercentage(tasaEsperada) + '). Evalúa otras opciones.' }}
+                  </p>
+                </div>
+                
+                <div class="explanation-item" *ngIf="analisisResultado.precioJusto">
+                  <div class="explanation-header">
+                    <span class="explanation-icon">⚖️</span>
+                    <span class="explanation-name">Precio Justo</span>
+                  </div>
+                  <p class="explanation-text">
+                    <strong>{{ formatCurrency(analisisResultado.precioJusto, analisisResultado.moneda) }}</strong><br>
+                    {{ precioCompra <= analisisResultado.precioJusto ? 
+                      'Precio de compra (' + formatCurrency(precioCompra, analisisResultado.moneda) + ') está por debajo del precio justo. Buena oportunidad.' : 
+                      'Precio de compra (' + formatCurrency(precioCompra, analisisResultado.moneda) + ') está por encima del precio justo. Caro.' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen de inversión -->
+            <div class="analysis-section" *ngIf="analisisResultado.analisisCompleto">
+              <h4 class="section-subtitle">
+                <i class="icon">💰</i>
+                Resumen de Inversión
+              </h4>
+              <div class="investment-summary">
+                <div class="summary-row">
+                  <span class="summary-label">Inversión Inicial:</span>
+                  <span class="summary-value">{{ formatCurrency(analisisResultado.analisisCompleto.resumenInversion.valorInversion, analisisResultado.moneda) }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Valor Final Esperado:</span>
+                  <span class="summary-value success">{{ formatCurrency(analisisResultado.analisisCompleto.resumenInversion.valorFinalEsperado, analisisResultado.moneda) }}</span>
+                </div>
+                <div class="summary-row highlight">
+                  <span class="summary-label">Ganancia Total:</span>
+                  <span class="summary-value gain">{{ formatCurrency(analisisResultado.analisisCompleto.resumenInversion.gananciaTotal, analisisResultado.moneda) }}</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Cantidad de Bonos:</span>
+                  <span class="summary-value">{{ cantidad }} {{ cantidad === 1 ? 'bono' : 'bonos' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Indicadores de Rendimiento -->
+            <div class="analysis-section" *ngIf="analisisResultado.analisisCompleto">
+              <h4 class="section-subtitle">
+                <i class="icon">📈</i>
+                Análisis de Rendimiento
+              </h4>
+              <div class="performance-indicators">
+                <div class="performance-card" *ngIf="analisisResultado.rendimientoTotal">
+                  <div class="performance-header">
+                    <span class="performance-icon">🎯</span>
+                    <span class="performance-name">Rendimiento Total</span>
+                  </div>
+                  <div class="performance-value">{{ formatPercentage(analisisResultado.rendimientoTotal) }}</div>
+                  <div class="performance-description">Retorno total esperado</div>
+                </div>
+                <div class="performance-card" *ngIf="analisisResultado.yield">
+                  <div class="performance-header">
+                    <span class="performance-icon">📊</span>
+                    <span class="performance-name">Yield to Maturity</span>
+                  </div>
+                  <div class="performance-value">{{ formatPercentage(analisisResultado.yield) }}</div>
+                  <div class="performance-description">Rendimiento al vencimiento</div>
+                </div>
+                <div class="performance-card van-indicator" *ngIf="analisisResultado.van !== undefined">
+                  <div class="performance-header">
+                    <span class="performance-icon">{{ analisisResultado.van > 0 ? '✅' : '❌' }}</span>
+                    <span class="performance-name">Decisión VAN</span>
+                  </div>
+                  <div class="performance-value" [class.success]="analisisResultado.van > 0" [class.warning]="analisisResultado.van < 0">
+                    {{ analisisResultado.van > 0 ? 'ACEPTA' : 'RECHAZA' }}
+                  </div>
+                  <div class="performance-description" [class.success]="analisisResultado.van > 0" [class.warning]="analisisResultado.van < 0">
+                    {{ analisisResultado.van > 0 ? 'Inversión recomendada' : 'Inversión no recomendada' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Indicadores de Riesgo -->
+            <div class="analysis-section" *ngIf="analisisResultado.analisisCompleto">
+              <h4 class="section-subtitle">
+                <i class="icon">⚠️</i>
+                Indicadores de Riesgo
+              </h4>
+              <div class="risk-indicators">
+                <div class="risk-card">
+                  <div class="risk-header">
+                    <span class="risk-icon">⏱️</span>
+                    <span class="risk-name">Duración</span>
+                  </div>
+                  <div class="risk-value">{{ formatNumber(analisisResultado.analisisCompleto.indicadoresRiesgo.duracion, 1) }} años</div>
+                  <div class="risk-level" [class]="'level-' + getRiskLevel(analisisResultado.analisisCompleto.indicadoresRiesgo.duracion).toLowerCase()">
+                    {{ getRiskLevel(analisisResultado.analisisCompleto.indicadoresRiesgo.duracion) }}
+                  </div>
+                </div>
+                <div class="risk-card">
+                  <div class="risk-header">
+                    <span class="risk-icon">�</span>
+                    <span class="risk-name">Duración Modificada</span>
+                  </div>
+                  <div class="risk-value">{{ formatNumber(analisisResultado.analisisCompleto.indicadoresRiesgo.duracionModificada, 2) }}</div>
+                  <div class="risk-description">Sensibilidad a tasas</div>
+                </div>
+                <div class="risk-card">
+                  <div class="risk-header">
+                    <span class="risk-icon">📊</span>
+                    <span class="risk-name">Convexidad</span>
+                  </div>
+                  <div class="risk-value">{{ formatNumber(analisisResultado.analisisCompleto.indicadoresRiesgo.convexidad, 2) }}</div>
+                  <div class="risk-description">Curvatura de precio</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del Bono -->
+            <div class="analysis-section">
+              <h4 class="section-subtitle">
+                <i class="icon">📋</i>
+                Características del Bono
+              </h4>
+              <div class="bond-characteristics">
+                <div class="char-grid">
+                  <div class="char-item">
+                    <span class="char-label">Valor Nominal:</span>
+                    <span class="char-value">{{ formatCurrency(analisisResultado.valorNominal || 0, analisisResultado.moneda) }}</span>
+                  </div>
+                  <div class="char-item">
+                    <span class="char-label">Tasa Cupón:</span>
+                    <span class="char-value">{{ formatPercentage(analisisResultado.tasaCupon || 0) }} anual</span>
+                  </div>
+                  <div class="char-item">
+                    <span class="char-label">Plazo:</span>
+                    <span class="char-value">{{ analisisResultado.plazoAnios }} años</span>
+                  </div>
+                  <div class="char-item">
+                    <span class="char-label">Pagos:</span>
+                    <span class="char-value">{{ analisisResultado.frecuenciaPagos }}x por año</span>
+                  </div>
+                  <div class="char-item" *ngIf="analisisResultado.fechaVencimiento">
+                    <span class="char-label">Vencimiento:</span>
+                    <span class="char-value">{{ formatDate(analisisResultado.fechaVencimiento) }}</span>
+                  </div>
+                  <div class="char-item" *ngIf="analisisResultado.tiempoVencimiento">
+                    <span class="char-label">Tiempo restante:</span>
+                    <span class="char-value">{{ analisisResultado.tiempoVencimiento }} años</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Flujo del Inversionista -->
+        <div class="result-card cash-flow-result" *ngIf="flujoFinanciero && flujoFinanciero.length > 0">
+          <div class="result-header">
+            <h3>
+              <i class="icon">💸</i>
+              Flujo de Caja del Inversionista
+            </h3>
+            <div class="flow-summary">
+              <span class="flow-periods">{{ flujoFinanciero.length }} períodos</span>
+              <span class="investment-amount">Inversión: {{ formatCurrency(precioCompra, bonoSeleccionado.moneda?.codigo) }}</span>
+            </div>
+          </div>
+          <div class="result-content">
+            <div class="cash-flow-table-container">
+              <table class="cash-flow-table">
+                <thead>
+                  <tr>
+                    <th>Período</th>
+                    <th>Fecha</th>
+                    <th>Cupón</th>
+                    <th>Principal</th>
+                    <th>Flujo Recibido</th>
+                    <th>Saldo Neto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let flujo of flujoFinanciero; let i = index" 
+                      [class]="'period-' + flujo.periodo"
+                      [class.initial-investment]="flujo.periodo === 0"
+                      [class.final-payment]="flujo.periodo === flujoFinanciero.length - 1"
+                      [class.positive-balance]="flujo.saldo > 0"
+                      [class.negative-balance]="flujo.saldo < 0">
+                    <td class="period-cell">
+                      <span class="period-number">{{ flujo.periodo }}</span>
+                      <span class="period-desc" *ngIf="flujo.periodo === 0">Inversión</span>
+                    </td>
+                    <td class="date-cell">{{ formatDate(flujo.fecha) }}</td>
+                    <td class="amount-cell cupon">
+                      <span class="amount-value">{{ formatCurrency(flujo.cupon, bonoSeleccionado.moneda?.codigo) }}</span>
+                    </td>
+                    <td class="amount-cell principal">
+                      <span class="amount-value">{{ formatCurrency(flujo.principal, bonoSeleccionado.moneda?.codigo) }}</span>
+                    </td>
+                    <td class="amount-cell total" [class.negative]="flujo.flujoTotal < 0">
+                      <span class="amount-value highlight">{{ formatCurrency(flujo.flujoTotal, bonoSeleccionado.moneda?.codigo) }}</span>
+                    </td>
+                    <td class="amount-cell balance" [class.positive]="flujo.saldo > 0" [class.negative]="flujo.saldo < 0">
+                      <span class="amount-value">{{ formatCurrency(flujo.saldo, bonoSeleccionado.moneda?.codigo) }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Resumen del flujo del inversionista -->
+            <div class="cash-flow-summary">
+              <div class="summary-item">
+                <span class="summary-label">Inversión Inicial</span>
+                <span class="summary-value negative">{{ formatCurrency(precioCompra, bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Cupones</span>
+                <span class="summary-value">{{ formatCurrency(getTotalCupones(), bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Principal Recibido</span>
+                <span class="summary-value">{{ formatCurrency(getTotalPrincipal(), bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+              <div class="summary-item highlight">
+                <span class="summary-label">Ganancia Neta Total</span>
+                <span class="summary-value">{{ formatCurrency(getGananciaNeta(), bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Rendimiento Total</span>
+                <span class="summary-value">{{ getRendimientoTotal() }}%</span>
+              </div>
+            </div>
+            
+            <!-- Información adicional para el inversionista -->
+            <div class="investor-insights">
+              <div class="insight-item">
+                <i class="icon">⏰</i>
+                <span>Recupera inversión en período {{ getPeriodoRecuperacion() }}</span>
+              </div>
+              <div class="insight-item">
+                <i class="icon">📈</i>
+                <span>Ganancia total: {{ formatCurrency(getGananciaNeta(), bonoSeleccionado.moneda?.codigo) }}</span>
+              </div>
+              <div class="insight-item">
+                <i class="icon">💰</i>
+                <span>ROI: {{ getRendimientoTotal() }}% en {{ bonoSeleccionado.plazoAnios }} años</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

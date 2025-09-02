@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  bonoya-frontend:
+    image: ${DOCKER_REGISTRY:-codaress}/bonoya-frontend:${DOCKER_IMAGE_TAG:-latest}
+    container_name: bonoya-frontend-prod
+    ports:
+      - "80:80"  # Mapear puerto 80 del host al puerto 80 del contenedor
+    volumes:
+      - static_files:/usr/share/nginx/html:ro  # read-only para mayor seguridad
+    environment:
+      - NODE_ENV=production
+      - API_URL=${API_URL:-http://52.176.215.11:8080}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  static_files:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

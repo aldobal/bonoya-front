@@ -1,0 +1,340 @@
+<div class="page-container">
+  <!-- Header estándar con tema verde inversor -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Historial de Análisis</h1>
+      <p>Revisa todos tus cálculos y análisis financieros guardados en un solo lugar</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/mis-calculos" class="btn btn-secondary">
+        <i class="icon">🧮</i>
+        Calculadora
+      </a>
+      <a routerLink="/inversor/dashboard" class="btn btn-secondary">
+        <i class="icon">🏠</i>
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab active">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <h3>Cargando historial</h3>
+      <p>Recuperando tus análisis guardados...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-state">
+    <div class="error-card">
+      <div class="error-icon">
+        <i>⚠️</i>
+      </div>
+      <h3>Error al cargar historial</h3>
+      <p>{{ error }}</p>
+      <button (click)="cargarHistorial()" class="btn btn-primary">
+        <i class="icon">🔄</i>
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error" class="main-content">
+    
+    <!-- Sección de filtros y estadísticas -->
+    <section class="filters-section">
+      <div class="filters-header">
+        <h2 class="section-title">
+          <i class="section-icon">🔍</i>
+          Filtros y Búsqueda
+        </h2>
+        <div class="stats-badge">
+          <i class="icon">📋</i>
+          {{ analisisFiltrados.length }} análisis encontrados
+        </div>
+      </div>
+
+      <div class="filters-grid">
+        <!-- Filtro por tipo -->
+        <div class="filter-group">
+          <label for="filtroTipo" class="filter-label">Tipo de Análisis</label>
+          <select 
+            id="filtroTipo"
+            class="form-control" 
+            [(ngModel)]="filtroTipo" 
+            (change)="aplicarFiltros()">
+            <option value="">Todos los tipos</option>
+            <option value="TREA">Cálculos TREA Locales</option>
+            <option value="FLUJO_CAJA">Flujo de Caja Local</option>
+            <option value="CALCULO_BACKEND">Cálculos desde Backend</option>
+          </select>
+        </div>
+        
+        <!-- Filtro por fecha -->
+        <div class="filter-group">
+          <label for="filtroFecha" class="filter-label">Período</label>
+          <select 
+            id="filtroFecha"
+            class="form-control" 
+            [(ngModel)]="filtroFecha" 
+            (change)="aplicarFiltros()">
+            <option value="">Todas las fechas</option>
+            <option value="hoy">Hoy</option>
+            <option value="semana">Última semana</option>
+            <option value="mes">Último mes</option>
+            <option value="trimestre">Último trimestre</option>
+          </select>
+        </div>
+        
+        <!-- Búsqueda por bono -->
+        <div class="filter-group">
+          <label for="filtroTexto" class="filter-label">Buscar por bono</label>
+          <input 
+            id="filtroTexto"
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="filtroTexto" 
+            (input)="aplicarFiltros()"
+            placeholder="Nombre del bono...">
+        </div>
+        
+        <!-- Acciones -->
+        <div class="filter-actions">
+          <button class="btn btn-outline" (click)="limpiarFiltros()" [disabled]="loading">
+            <i class="icon">🧹</i>
+            Limpiar Filtros
+          </button>
+          <button class="btn btn-primary" (click)="exportarHistorial()" [disabled]="loading || analisisFiltrados.length === 0">
+            <i class="icon">📄</i>
+            Exportar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div *ngIf="analisisFiltrados.length === 0" class="empty-state">
+      <div class="empty-card">
+        <div class="empty-icon">
+          <i>📈</i>
+        </div>
+        <h3>No hay análisis guardados</h3>
+        <p>Aún no tienes análisis financieros en tu historial. Comienza creando tu primer cálculo.</p>
+        <a routerLink="/inversor/mis-calculos" class="btn btn-primary">
+          <i class="icon">🧮</i>
+          Crear Primer Análisis
+        </a>
+      </div>
+    </div>
+
+    <!-- Grid de Análisis -->
+    <section *ngIf="analisisFiltrados.length > 0" class="analisis-section">
+      <h2 class="section-title">
+        <i class="section-icon">📊</i>
+        Tus Análisis Guardados
+      </h2>
+      
+      <div class="analisis-grid">
+        <div *ngFor="let analisis of analisisFiltrados; trackBy: trackByAnalisisId" class="analisis-card">
+          <!-- Card Header -->
+          <div class="card-header">
+            <div class="analisis-info">
+              <h3>{{ getTituloAnalisis(analisis) }}</h3>
+              <div class="analisis-meta">
+                <div class="tipo-badge" [class]="'tipo-' + analisis.tipo.toLowerCase()">
+                  <i class="icon">{{ getIconoTipo(analisis.tipo) }}</i>
+                  {{ getTipoAnalisis(analisis.tipo) }}
+                </div>
+                <div class="fecha-badge">
+                  <i class="icon">📅</i>
+                  {{ analisis.fecha | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+            </div>
+            <div class="card-menu">
+              <button class="btn-menu" (click)="toggleMenu(analisis.id)">
+                <i class="icon">⋮</i>
+              </button>
+              <div class="menu-dropdown" [class.active]="menuActivo === analisis.id">
+                <button (click)="verDetalles(analisis)" class="menu-item">
+                  <i class="icon">👁️</i>
+                  Ver Detalles
+                </button>
+                <button (click)="duplicarAnalisis(analisis)" class="menu-item">
+                  <i class="icon">📋</i>
+                  Duplicar
+                </button>
+                <button (click)="eliminarAnalisis(analisis.id)" class="menu-item danger">
+                  <i class="icon">🗑️</i>
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="card-content">
+            <!-- Información del bono (si aplica) -->
+            <div *ngIf="analisis.bono" class="bono-info">
+              <div class="info-item">
+                <span class="info-icon">🏛️</span>
+                <span class="info-label">Bono:</span>
+                <span class="info-value">{{ analisis.bono }}</span>
+              </div>
+            </div>
+
+            <!-- Parámetros principales -->
+            <div class="parametros-principales">
+              <div *ngIf="analisis.parametros?.valorNominal" class="param-item">
+                <span class="param-label">Valor Nominal</span>
+                <span class="param-value">{{ formatCurrency(analisis.parametros.valorNominal) }}</span>
+              </div>
+              <div *ngIf="analisis.parametros?.tasa" class="param-item">
+                <span class="param-label">Tasa</span>
+                <span class="param-value">{{ analisis.parametros.tasa }}%</span>
+              </div>
+              <div *ngIf="analisis.parametros?.plazo" class="param-item">
+                <span class="param-label">Plazo</span>
+                <span class="param-value">{{ analisis.parametros.plazo }} años</span>
+              </div>
+            </div>
+
+            <!-- Resultados principales -->
+            <div class="resultados-principales">
+              <!-- Para TREA -->
+              <div *ngIf="analisis.tipo === 'TREA' && analisis.resultados?.trea" class="resultado-destacado trea">
+                <div class="resultado-icon">
+                  <i>📈</i>
+                </div>
+                <div class="resultado-content">
+                  <span class="resultado-label">TREA Calculada</span>
+                  <span class="resultado-value">{{ analisis.resultados.trea | number:'1.2-4' }}%</span>
+                </div>
+              </div>
+
+              <!-- Para Flujo de Caja -->
+              <div *ngIf="analisis.tipo === 'FLUJO_CAJA' && analisis.resultados?.vap" class="resultado-destacado flujo">
+                <div class="resultado-icon">
+                  <i>💰</i>
+                </div>
+                <div class="resultado-content">
+                  <span class="resultado-label">Valor Actual Neto</span>
+                  <span class="resultado-value">{{ formatCurrency(analisis.resultados.vap) }}</span>
+                </div>
+              </div>
+
+              <!-- Para Backend -->
+              <div *ngIf="analisis.tipo === 'CALCULO_BACKEND' && analisis.calculoBackend" class="resultado-destacado backend">
+                <div class="resultado-icon">
+                  <i>🎯</i>
+                </div>
+                <div class="resultado-content">
+                  <span class="resultado-label">TREA Backend</span>
+                  <span class="resultado-value">{{ analisis.calculoBackend.treaPorcentaje | number:'1.2-4' }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Card Footer -->
+          <div class="card-footer">
+            <button (click)="verDetalles(analisis)" class="btn btn-outline">
+              <i class="icon">👁️</i>
+              Ver Detalles
+            </button>
+            <button (click)="recalcular(analisis)" class="btn btn-primary">
+              <i class="icon">🔄</i>
+              Recalcular
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal de detalles -->
+  <div *ngIf="analisisSeleccionado" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ getTituloAnalisis(analisisSeleccionado) }}</h3>
+        <button (click)="cerrarModal()" class="btn-close">
+          <i class="icon">✕</i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Contenido detallado del análisis -->
+        <div class="detalle-seccion">
+          <h4>Información General</h4>
+          <div class="detalle-grid">
+            <div class="detalle-item">
+              <span class="detalle-label">Tipo:</span>
+              <span class="detalle-valor">{{ getTipoAnalisis(analisisSeleccionado.tipo) }}</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Fecha:</span>
+              <span class="detalle-valor">{{ analisisSeleccionado.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+            </div>
+            <div *ngIf="analisisSeleccionado.bono" class="detalle-item">
+              <span class="detalle-label">Bono:</span>
+              <span class="detalle-valor">{{ analisisSeleccionado.bono }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detalle-seccion">
+          <h4>Parámetros Utilizados</h4>
+          <div class="json-display">
+            <pre>{{ analisisSeleccionado.parametros | json }}</pre>
+          </div>
+        </div>
+
+        <div class="detalle-seccion">
+          <h4>Resultados Obtenidos</h4>
+          <div class="json-display">
+            <pre>{{ analisisSeleccionado.resultados | json }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="cerrarModal()" class="btn btn-outline">
+          Cerrar
+        </button>
+        <button (click)="duplicarAnalisis(analisisSeleccionado)" class="btn btn-primary">
+          <i class="icon">📋</i>
+          Duplicar Análisis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Footer -->
+  <div class="navigation-footer">
+    <a routerLink="/inversor/dashboard" class="btn btn-back">
+      <i class="icon">←</i>
+      Volver al Dashboard
+    </a>
+  </div>
+</div>

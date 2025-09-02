@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Frontend Angular en modo desarrollo
+  bonoya-frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: bonoya-frontend-dev
+    ports:
+      - "4200:4200"
+    volumes:
+      # Sincronizar código para hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/.angular
+    environment:
+      - NODE_ENV=development
+      - NG_CLI_ANALYTICS=false
+      # Backend corriendo en el host (no en Docker)
+      - API_URL=http://host.docker.internal:8080
+    networks:
+      - bonoya-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Agregar acceso al host para conectar con backend local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  bonoya-network:
+    driver: bridge
+    name: bonoya-network

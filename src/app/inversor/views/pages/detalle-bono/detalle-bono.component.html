@@ -1,0 +1,112 @@
+<div class="page-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Detalle del Bono</h1>
+      <p *ngIf="bono">{{ bono.nombre }} - Análisis completo de la oportunidad de inversión</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/inversor/mis-calculos" class="btn btn-secondary">
+        <i class="icon">🧮</i>
+        Calculadora
+      </a>
+      <a routerLink="/inversor/catalogo" class="btn btn-secondary">
+        <i class="icon">🏪</i>
+        Catálogo
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="navigation-tabs">
+    <a routerLink="/inversor/dashboard" class="nav-tab">
+      <i class="icon">📊</i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/inversor/catalogo" class="nav-tab">
+      <i class="icon">🏪</i>
+      <span>Catálogo</span>
+    </a>
+    <a routerLink="/inversor/mis-calculos" class="nav-tab">
+      <i class="icon">🧮</i>
+      <span>Calculadora</span>
+    </a>
+    <a routerLink="/inversor/historial" class="nav-tab">
+      <i class="icon">📈</i>
+      <span>Historial</span>
+    </a>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando detalles del bono...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-content">
+      <i class="error-icon">⚠️</i>
+      <h3>Error al cargar</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="cargarDetalleBono()">
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div *ngIf="bono && !loading && !error" class="content-wrapper">
+    
+    <!-- Información Básica del Bono -->
+    <section class="info-section">
+      <div class="section-header">
+        <h2>Información del Bono</h2>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-label">Emisor</div>
+          <div class="info-value">{{ bono.emisorNombre || 'No especificado' }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Valor Nominal</div>
+          <div class="info-value destacado">{{ formatCurrency(bono.valorNominal) }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Tasa Cupón</div>
+          <div class="info-value destacado">{{ formatPercentage(bono.tasaCupon) }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Moneda</div>
+          <div class="info-value">{{ bono.moneda?.codigo || 'PEN' }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Fecha Emisión</div>
+          <div class="info-value">{{ formatDate(bono.fechaEmision) }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Plazo</div>
+          <div class="info-value">{{ bono.plazoAnios }} años</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Frecuencia Pagos</div>
+          <div class="info-value">{{ bono.frecuenciaPagos }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Método Amortización</div>
+          <div class="info-value">{{ bono.metodoAmortizacion }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Footer -->
+    <footer class="navigation-footer">
+      <a routerLink="/inversor/catalogo" class="btn btn-back">
+        <i class="icon">←</i>
+        <span>Volver al Catálogo</span>
+      </a>
+    </footer>
+
+  </div>
+
+</div>
