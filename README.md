@@ -579,7 +579,7 @@ Este proyecto está bajo la **Licencia MIT**. Ver el archivo [LICENSE](./LICENSE
 
 ---
 
-**Desarrollado con ❤️ por el equipo de CodAress**
+**Desarrollado con ❤️ por CodAress**
 
 *Última actualización: Septiembre 2025*
 
