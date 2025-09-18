@@ -1,4 +1,4 @@
-# 💰 BonoFácil - Sistema de Gestión de Bonos Corporativos
+# 💰 BonoYa - Sistema de Gestión de Bonos Corporativos
 
 > **Sistema web profesional para la gestión integral de bonos corporativos con cálculos financieros avanzados**
 
